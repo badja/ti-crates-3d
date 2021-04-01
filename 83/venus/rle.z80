@@ -1,0 +1,39 @@
+
+//========================================================//
+// RLE picture displayer v1.1                             //
+// Decodes a RLE picture made by RLE2PIC                  //
+//                                                        //
+// written by David Phillips <electrum@tfs.net>           //
+// started: 8/19/98                                       //
+// last update: 11/05/98                                  //
+// modified a little by Aaron on 8/25/99                  //
+//                                                        //
+// input: HL = RLE encoded picture, DE = where to display //
+// output: 768 byte decoded picture                       //
+// destroys: AF, BC, DE, HL                               //
+// current size: 25 bytes                                 //
+//========================================================//
+
+DispRLE
+    ld bc, 768          // we need to copy 768 for 83/83+ pics
+DispRLEL
+    ld a, (hl)          // get the next byte
+    cp $91              // is it a run?
+    jr z, DispRLERun    // then we need to decode the run
+    ldi                 // copy the byte, and update counters
+DispRLEC
+    ret po              // ret if bc hit 0
+    jr DispRLEL         // otherwise do next byte
+DispRLERun
+    inc hl
+    inc hl              // move to the run count
+    ld a, (hl)          // get the run count
+DispRLERunL
+    dec hl              // go back to run value
+    dec a               // decrease run counter
+    ldi                 // copy byte, dec bc, inc de, inc hl
+    jr nz, DispRLERunL  // if we're not done, then loop
+    inc hl              // advance the source pointer
+    jr DispRLEC         // check to see if we should loop
+
+// Copyright © 1998-2000 ACZ (Assembly Coder's Zenith, Inc.)
